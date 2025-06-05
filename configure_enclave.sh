@@ -364,7 +364,14 @@ cat <<'EOF' > user-data.sh
 #!/bin/bash
 # Update the instance and install Nitro Enclaves tools, Docker and other utilities
 sudo yum update -y
-sudo yum install -y aws-nitro-enclaves-cli-devel aws-nitro-enclaves-cli docker nano socat git make
+# Install Amazon Linux extras and enable Nitro Enclaves CLI
+sudo yum install -y amazon-linux-extras
+sudo amazon-linux-extras enable aws-nitro-enclaves-cli
+sudo yum clean metadata
+sudo yum install -y aws-nitro-enclaves-cli || echo "nitro-cli install failed"
+
+# Other dependencies
+sudo yum install -y docker nano socat git make jq
 
 # Add the current user to the docker group (so you can run docker without sudo)
 sudo usermod -aG docker ec2-user
