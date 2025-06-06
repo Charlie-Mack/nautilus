@@ -27,6 +27,9 @@ async fn main() -> Result<()> {
     let cors = CorsLayer::new().allow_methods(Any).allow_headers(Any);
 
     let app = Router::new()
+        .route("/hello_log", get(|| async {
+            std::fs::read_to_string("/tmp/hello.log").unwrap_or_default()
+        }))
         .route("/", get(ping))
         .route("/get_attestation", get(get_attestation))
         .route("/process_data", post(process_data))

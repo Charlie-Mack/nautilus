@@ -71,6 +71,7 @@ COPY --from=core-ca-certificates /etc/ssl/certs initramfs
 COPY --from=core-busybox /bin/sh initramfs/sh
 COPY --from=user-jq /bin/jq initramfs
 COPY --from=user-socat /bin/socat . initramfs
+COPY hello.tar.gz initramfs/images/hello.tar.gz
 RUN cp /target/${TARGET}/release/init initramfs
 RUN cp /src/nautilus-server/target/${TARGET}/release/nautilus-server initramfs
 RUN cp /src/nautilus-server/traffic_forwarder.py initramfs/

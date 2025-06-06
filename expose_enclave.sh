@@ -10,4 +10,6 @@ ENCLAVE_CID=$(nitro-cli describe-enclaves | jq -r ".[0].EnclaveCID")
 sleep 5
 # Secrets-block
 SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:eu-central-1:565802942559:secret:weather-api-key-gI3nmW --region eu-central-1 | jq -r .SecretString)
-echo "$SECRET_VALUE" | jq -R '{"API_KEY": .}' > secrets.jsonsocat TCP4-LISTEN:3000,reuseaddr,fork VSOCK-CONNECT:$ENCLAVE_CID:3000 &
+echo "$SECRET_VALUE" | jq -R '{"API_KEY": .}' > secrets.json
+cat secrets.json | socat - VSOCK-CONNECT:$ENCLAVE_CID:7777
+socat TCP4-LISTEN:3000,reuseaddr,fork VSOCK-CONNECT:$ENCLAVE_CID:3000 &
