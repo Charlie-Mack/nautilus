@@ -24,6 +24,10 @@ FROM stagex/linux-nitro@sha256:073c4603686e3bdc0ed6755fee3203f6f6f1512e0ded09eae
 FROM stagex/user-cpio@sha256:2695e1b42f93ec3ea0545e270f0fda4adca3cb48d0526da01954efae1bce95c4 AS user-cpio
 FROM stagex/user-socat:local@sha256:acef3dacc5b805d0eaaae0c2d13f567bf168620aea98c8d3e60ea5fd4e8c3108 AS user-socat
 FROM stagex/user-jq@sha256:ced6213c21b570dde1077ef49966b64cbf83890859eff83f33c82620520b563e AS user-jq
+FROM stagex/user-libseccomp@sha256:1b3cb1a7faad08a74a756894bf4e3ad24296c5bef5d30c918c64fc3cc74d1648 AS user-libseccomp
+FROM stagex/user-containerd@sha256:f9a5f51f9a48e348d8c2ecd56cf44659c8c7488a7c28797bacbeaaa1d97fa36b AS user-containerd
+FROM stagex/user-runc@sha256:9cb1b6d16811b59671cee74b402cc1f622fbc1ca60d4a1e47407fd5c50f70893 AS user-runc
+FROM stagex/user-docker@sha256:ebf48271bb36851bd4966481685df4026ad575e2283d5d4ac9a2aed94b0a65eb AS user-docker
 
 FROM scratch as base
 ENV TARGET=x86_64-unknown-linux-musl
@@ -47,6 +51,10 @@ COPY --from=user-eif_build . /
 COPY --from=core-llvm . /
 COPY --from=core-gcc . /
 COPY --from=user-cpio . /
+COPY --from=user-libseccomp . /
+COPY --from=user-containerd . /
+COPY --from=user-runc . /
+COPY --from=user-docker . /
 COPY --from=user-linux-nitro /bzImage .
 COPY --from=user-linux-nitro /nsm.ko .
 COPY --from=user-linux-nitro /linux.config .
@@ -67,11 +75,30 @@ COPY --from=user-linux-nitro /nsm.ko initramfs/nsm.ko
 COPY --from=core-busybox . initramfs
 COPY --from=core-python . initramfs
 COPY --from=core-musl . initramfs
+COPY --from=user-libseccomp . initramfs
+COPY --from=user-containerd . initramfs
+COPY --from=user-runc . initramfs
+COPY --from=user-docker . initramfs
 COPY --from=core-ca-certificates /etc/ssl/certs initramfs
 COPY --from=core-busybox /bin/sh initramfs/sh
 COPY --from=user-jq /bin/jq initramfs
 COPY --from=user-socat /bin/socat . initramfs
 COPY hello.tar.gz initramfs/images/hello.tar.gz
+
+RUN mkdir initramfs/proc
+RUN mkdir initramfs/run
+RUN mkdir initramfs/run/docker
+RUN mkdir initramfs/var/lib
+RUN mkdir initramfs/var/lib/docker
+RUN mkdir -p initramfs/etc/docker
+RUN mkdir -p initramfs/agents
+RUN mkdir -p initramfs/usr/local/bin
+RUN cp /src/nautilus-server/daemon.json initramfs/etc/docker/
+COPY --from=user-containerd /bin/containerd* initramfs/usr/local/bin/
+COPY --from=user-containerd /bin/ctr initramfs/usr/local/bin/
+COPY --from=user-runc /bin/runc initramfs/usr/local/bin/
+COPY --from=user-libseccomp /lib/libseccomp.so.2 initramfs/lib/
+
 RUN cp /target/${TARGET}/release/init initramfs
 RUN cp /src/nautilus-server/target/${TARGET}/release/nautilus-server initramfs
 RUN cp /src/nautilus-server/traffic_forwarder.py initramfs/
