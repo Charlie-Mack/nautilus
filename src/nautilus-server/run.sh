@@ -90,12 +90,8 @@ echo "Loading image"
 # --------------------------------------------------------------------
 
 echo "Running container"
-
-# Run the container immediately and capture its output
-/usr/bin/docker run --rm enclave-hello:latest > /tmp/hello.log 2>&1 &
-
-# expose /tmp/hello.log on the REST API or just cat it for debug
-cat /tmp/hello.log   # should print “Hello from inside the enclave!”
+/usr/bin/docker run --rm enclave-hello:latest > /tmp/hello.log 2>&1
+cat /tmp/hello.log
 # --------------------------------------------------------------------
 
 echo "Starting nautilus-server"
