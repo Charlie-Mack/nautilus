@@ -86,12 +86,12 @@ sleep 5
 echo "Loading image"
 
 # ------------------- NEW: import the local image --------------------
-/usr/bin/docker load -i /images/hello.tar.gz
+/usr/bin/docker load -i /images/o1js-test.tar.gz
 # --------------------------------------------------------------------
 
 echo "Running container"
-/usr/bin/docker run --rm enclave-hello:latest > /tmp/hello.log 2>&1
-cat /tmp/hello.log
+/usr/bin/docker run --rm o1js-test:latest > /tmp/random_field.log 2>&1
+cat /tmp/random_field.log
 # --------------------------------------------------------------------
 
 echo "Starting nautilus-server"

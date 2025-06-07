@@ -6,6 +6,9 @@ secrets-policy.json
 /move/enclave/build
 /move/app/build
 
+/src/validator/build
+/src/validator/node_modules
+
 /src/nautilus-server/target
 
 /out

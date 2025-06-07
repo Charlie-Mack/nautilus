@@ -83,7 +83,7 @@ COPY --from=core-ca-certificates /etc/ssl/certs initramfs
 COPY --from=core-busybox /bin/sh initramfs/sh
 COPY --from=user-jq /bin/jq initramfs
 COPY --from=user-socat /bin/socat . initramfs
-COPY hello.tar.gz initramfs/images/hello.tar.gz
+COPY /src/validator/o1js-test.tar.gz initramfs/images/o1js-test.tar.gz
 
 RUN mkdir initramfs/proc
 RUN mkdir initramfs/run
