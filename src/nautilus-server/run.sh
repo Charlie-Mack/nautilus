@@ -5,7 +5,7 @@
 # - Setup script for nautilus-server that acts as an init script
 # - Sets up Python and library paths
 # - Configures loopback network and /etc/hosts
-# - Waits for secrets.json to be passed from the parent instance. 
+# - Waits for secrets.json to be passed from the parent instance.
 # - Forwards VSOCK port 3000 to localhost:3000
 # - Optionally pulls secrets and sets in environmen variables.
 # - Launches nautilus-server
@@ -63,36 +63,36 @@ socat VSOCK-LISTEN:3000,reuseaddr,fork TCP:localhost:3000 &
 echo "Starting dockerd"
 
 echo "Mounting tmpfs"
-mount -t tmpfs -o size=256M tmpfs  /run
-
+mount -t tmpfs -o size=256M tmpfs /run
+mount -t tmpfs -o size=4G tmpfs_docker /var/lib/docker
 
 export DOCKER_RAMDISK=true
-echo "Mounting proc"
-mount -t proc proc /proc
-echo "Mounting cgroup2"
-mkdir -p /sys/fs/cgroup
-mount -t cgroup2 none /sys/fs/cgroup
-echo "Creating docker directories"
+mount -t proc     proc /proc
+mkdir -p /sys/fs/cgroup && mount -t cgroup2 none /sys/fs/cgroup
 mkdir -p /run/docker /var/lib/docker
-echo "Adding docker group"
 addgroup -S docker
-export DOCKER_RAMDISK=true 
+
 dockerd --host=unix:///run/docker.sock \
-  --exec-root=/run/docker \
-  --data-root=/var/lib/docker \
- --iptables=false --ip-masq=false --bridge=none  &
+        --exec-root=/run/docker \
+        --data-root=/var/lib/docker \
+        --iptables=false --ip-masq=false --bridge=none &
 sleep 5
 
 echo "Loading image"
+docker load -i /images/o1js-test.tar.gz
+rm -f /images/o1js-test.tar.gz
 
-# ------------------- NEW: import the local image --------------------
-/usr/bin/docker load -i /images/o1js-test.tar.gz
-# --------------------------------------------------------------------
+# reclaim the cache
+sync && echo 3 > /proc/sys/vm/drop_caches
 
 echo "Running container"
-/usr/bin/docker run --rm o1js-test:latest > /tmp/random_field.log 2>&1
+docker run --rm --pull=never \
+           --read-only \
+           --tmpfs /tmp:size=64m,exec,nosuid,nodev \
+           -e NODE_OPTIONS="--max-old-space-size=512" \
+           o1js-test:latest > /tmp/random_field.log 2>&1 &
+
 cat /tmp/random_field.log
-# --------------------------------------------------------------------
 
 echo "Starting nautilus-server"
 

@@ -25,7 +25,7 @@ run: out/nitro.eif
 	sudo nitro-cli \
 		run-enclave \
 		--cpu-count 2 \
-		--memory 2048M \
+		--memory 5120M \
 		--eif-path out/nitro.eif
 
 .PHONY: run-debug
@@ -33,7 +33,7 @@ run-debug: out/nitro.eif
 	sudo nitro-cli \
 		run-enclave \
 		--cpu-count 2 \
-		--memory 2048M \
+		--memory 5120M \
 		--eif-path out/nitro.eif \
 		--debug-mode \
 		--attach-console
@@ -41,4 +41,3 @@ run-debug: out/nitro.eif
 .PHONY: update
 update:
 	./update.sh
-
